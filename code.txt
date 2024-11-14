@@ -1,0 +1,96 @@
+
+#include<reg51.h>
+#define lcd P1
+sbit rs=P3^5;
+sbit rw=P3^6;
+sbit e=P3^7;
+sbit s1=P2^0;
+sbit s2=P2^1;
+void delay (int);
+void cmd (unsigned char);
+void display (unsigned char);
+void init (void);
+void view (int);
+void string (char *);
+int count=0;
+void main()
+{
+    init();
+    string("NBNSTIC");
+    cmd(0xc0);
+    string("Welcome");
+    delay(1000);
+    cmd(0x01);
+    cmd(0x80);
+    string("People Counter!");
+    cmd(0xc0);
+    view(count);
+    while(1)
+    {
+      if(s1==0)
+			{
+				delay(200);
+					if(s2==0)
+					{
+						count=count+1;
+						view(count);
+						delay(500);
+					}
+			}else if(s2==0){
+				delay(200);
+				if(s1==0)
+				{
+					count=count-1;
+					view(count);
+					delay(500);
+				}
+			}
+    }
+}
+void delay (int d)
+{
+    unsigned char i=0;
+    for(;d>0;d--)
+    {
+        for(i=250;i>0;i--);
+        for(i=248;i>0;i--);
+    }
+}
+void cmd (unsigned char c)
+{
+    lcd=c;
+    rs=0;
+    rw=0;
+    e=1;
+    delay(5);
+    e=0;
+}
+void display (unsigned char c)
+{
+    lcd=c;
+    rs=1;
+    rw=0;
+    e=1;
+    delay(5);
+    e=0;
+}
+void string (char *p)
+{
+    while(*p)
+    {
+        display(*p++);
+    }
+}
+void init (void)
+{
+    cmd(0x38);
+    cmd(0x0c);
+    cmd(0x01);
+    cmd(0x80);
+}
+void view (int n)
+{
+    cmd(0xc0);
+    display(((n/10)%10)+'0');
+    display((n%10)+'0');
+}
